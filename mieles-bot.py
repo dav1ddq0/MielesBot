@@ -8,12 +8,7 @@ from telegram.files.inputmedia import InputMedia, InputMediaDocument
 from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 import json
 
-INPUT_TEXT:int = 0;
-UBUNTU: int = 1;
-MANJARO_ID: int =2;
-REPO: int = 3;
-MENU: int = 5;
-
+REPO, MENU = range (2)
 
 def main_menu(update: Update, context:CallbackContext):
 
@@ -21,7 +16,7 @@ def main_menu(update: Update, context:CallbackContext):
         KeyboardButton("Linux Repos"),  KeyboardButton("Config Proxy Python")
     ],
     [        
-        KeyboardButton("Config Proxy  npm ")
+        KeyboardButton("Config npm Proxy"), KeyboardButton("Consumo Nacionales")
     ]]
 
     keyboardMarkup = ReplyKeyboardMarkup(buttons)
@@ -57,89 +52,16 @@ def python_proxy(update: Update, context: CallbackContext):
         photo = open(filename, 'rb'),caption='Example'
     )   
 
-
-# def start(update: Update, context:CallbackContext):
-#     update.message.reply_text(
-#         text = 'Buenas, aquí podrás encontrar la mayoría de los sitios libres de costo\n',
-#         reply_markup = InlineKeyboardMarkup([
-#             [InlineKeyboardButton(text='🐧 Ubuntu Repo 🐧', callback_data='ubuntu')],
-#             [InlineKeyboardButton(text='Python', callback_data='python')],
-#             [InlineKeyboardButton(text='Facebook', url='https://facebook.com')]
-#         ])
-#     )
+def npm_proxy(update: Update, context: CallbackContext):
+    update.message.reply_text(
+        text = 'Configuración:'
+    )
+    update.message.reply_text(
+        text = 'npm config set registry http://nexus.prod.uci.cu/repository/npm-proxy/\n'
+    )
 
 
-
-# def linux_callback_handler(update: Update, context: CallbackContext):
-#     query = update.callback_query
-#     query.answer()
-#     query.edit_message_text(
-#         text = 'Linux Repo',
-#         reply_markup =  InlineKeyboardMarkup([
-#             [InlineKeyboardButton(text='Ubuntu', callback_data='')],
-#             [InlineKeyboardButton(text='how to use', callback_data = '2')]
-#         ])
-#     )
-
-# def python_command_handler(update, context):
-#     query = update.callback_query
-#     query.answer()
-
-#     query.edit_message_text(
-#         text = 'Python Configuracion',
-#         reply_markup =  InlineKeyboardMarkup([
-#             [InlineKeyboardButton(text='proxy', callback_data='py')],
-#             [InlineKeyboardButton(text='how to use', callback_data = '2')]
-#         ])
-#     )
     
-
-
-# def qr_command_handler(update, context):
-#     update.message.reply_text('Enviame el texto para generarte un codigo QR')
-#     return INPUT_TEXT
-
-# def qr_callback_handler(update, context):
-#     query = update.callback_query
-#     query.answer()
-#     query.edit_message_text(
-#         text ='Enviame el texto para generarte un codigo QR'
-#     )
-#     return INPUT_TEXT
-
-# def ubuntu_callback_handler(update: Update, context: CallbackContext):
-#     text = update.message.text
-#     filename = generate_qr(text)
-#     chat  = update.message.chat
-#     print(chat)
-#     # print(filename)
-#     send_qr(filename, chat)
-#     return ConversationHandler.END
-   
-   
-    
-    
-    
-    
-    # return ConversationHandler.END
-
-# def generate_qr(text: str):
-#     filename = f'{text}.jpg'
-#     img = qrcode.make(text)
-#     img.save(filename)
-#     return filename
-
-# def send_qr(filename, chat: ChatAction):
-    
-#     chat.send_action(
-#         action = ChatAction.UPLOAD_PHOTO,
-#         timeout = None
-#     )
-#     chat.send_photo(
-#         photo=open(filename, 'rb')
-#     )
-
-#     os.unlink(filename)
 
 def send_file(filename: str, chat: Chat):
     chat.send_action(
@@ -167,16 +89,25 @@ def send_fedora_repo(update: Update, context: CallbackContext):
     filename = './linux-files/fedora/yum.repos.d.zip'
     chat = update.message.chat
     send_file(filename, chat)
-    
 
-# def input_text(update: Update, context: CallbackContext):
-#     text = update.message.text
-#     filename = generate_qr(text)
-#     chat  = update.message.chat
-#     print(chat)
-#     # print(filename)
-#     send_qr(filename, chat)
-#     return ConversationHandler.END 
+def nacionales(update: Update, context: CallbackContext):
+    codeURL = "http://download.jovenclub.cu/aplicaciones/vscode/"
+    chromeURL = "http://download.jovenclub.cu/aplicaciones/google-chrome/"
+    joveclubURL = "http://download.jovenclub.cu/"
+
+
+
+    inlineKeyboardMarkup = InlineKeyboardMarkup([
+        [   InlineKeyboardButton(text = 'VSCode', url = codeURL),
+            InlineKeyboardButton(text = 'Google Chrome', url = chromeURL)
+        ],
+        [InlineKeyboardButton(text = 'JovenClub', url = joveclubURL)]
+    ])
+    update.message.reply_text(
+        text = 'Consumo de Datos Nacionales',
+        reply_markup= inlineKeyboardMarkup
+    )
+
 
 def fallback(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Disculpa no te entiendo")
@@ -196,7 +127,10 @@ def main():
         states={
             
             MENU: [MessageHandler(filters = Filters.regex(r"^(Linux Repos)$"), callback = linux_inline_menu),
-                MessageHandler(filters = Filters.regex(r"^(Config Proxy Python)$"), callback = python_proxy)],
+                MessageHandler(filters = Filters.regex(r"^(Config Proxy Python)$"), callback = python_proxy),
+                MessageHandler(filters = Filters.regex(r"^(Config npm Proxy)$"), callback = npm_proxy),
+                MessageHandler(filters = Filters.regex(r"^(Consumo Nacionales)$"), callback = nacionales)]
+                ,
             REPO: [
                 MessageHandler(filters = Filters.regex(r'^🐧 Ubuntu Repo 🐧$'), callback=send_ubuntu_repo),
                 MessageHandler(filters = Filters.regex(r'^🐧 Fedora Repo 🐧$'), callback=send_fedora_repo),
