@@ -17,6 +17,9 @@ def main_menu(update: Update, context:CallbackContext):
     ],
     [        
         KeyboardButton("Config npm Proxy"), KeyboardButton("Consumo Nacionales")
+    ],
+    [
+        KeyboardButton("Libre de Consumo")
     ]]
 
     keyboardMarkup = ReplyKeyboardMarkup(buttons)
@@ -40,9 +43,13 @@ def linux_inline_menu(update: Update, context:CallbackContext):
     return REPO;
 
 def python_proxy(update: Update, context: CallbackContext):
+    uci_proxy = "python -m pip install <package> --index-url http://nexus.prod.uci.cu/repository/pypi-proxy/simple/ --trusted-host nexus.prod.uci.cu"
+    ucvl_proxy = "python -m pip install <package> --index-url https://nexus.uclv.edu.cu/repository/pypi/simple/ --trusted-host nexus.uclv.edu.cu"
+    
     update.message.reply_text(
-        text = ' python -m pip install <package> --index-url http://nexus.prod.uci.cu/repository/pypi-proxy/simple/ --trusted-host nexus.prod.uci.cu\n')
+        text = f'UCI:\n {uci_proxy} \n UCLV:\n{ucvl_proxy}')
     chat = update.message.chat
+    
     chat.send_action(
         action = ChatAction.UPLOAD_PHOTO,
         timeout = None
@@ -108,6 +115,31 @@ def nacionales(update: Update, context: CallbackContext):
         reply_markup= inlineKeyboardMarkup
     )
 
+def libre_costo(update: Update, context: CallbackContext) -> None:
+    univOrienteURL = "http://ftp.uo.edu.cu/"
+    ubuntu = "http://ftp.uo.edu.cu/Linux/Ubuntu/"
+    prog = "http://ftp.uo.edu.cu/Programacion/"
+    fedora = "http://fedora.uci.cu/fedora/linux/releases/34/"
+
+   
+
+
+
+    inlineKeyboardMarkup = InlineKeyboardMarkup([
+        [   InlineKeyboardButton(text = 'FTP UO', url = univOrienteURL),
+            InlineKeyboardButton(text = 'Ubuntu ISO free', url = ubuntu)
+        ],
+        [
+            InlineKeyboardButton(text = 'Fedora ISO free', url = fedora),
+            InlineKeyboardButton(text = 'Pogración Cursos', url = prog)
+        ]
+    ])
+    update.message.reply_text(
+        text = '🆓 Libre de Consumo 🆓 (Aprovecha 😁)',
+        reply_markup= inlineKeyboardMarkup
+    )
+    
+
 
 def fallback(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Disculpa no te entiendo")
@@ -118,10 +150,10 @@ def main():
     f.close()
     updater = Updater(token=myToken, use_context=True)
     dp = updater.dispatcher
-   
+    
     dp.add_handler(ConversationHandler(
         entry_points=[          
-            CommandHandler('start', main_menu)
+            CommandHandler(command ='start', callback = main_menu)
             
         ],
         states={
@@ -129,7 +161,9 @@ def main():
             MENU: [MessageHandler(filters = Filters.regex(r"^(Linux Repos)$"), callback = linux_inline_menu),
                 MessageHandler(filters = Filters.regex(r"^(Config Proxy Python)$"), callback = python_proxy),
                 MessageHandler(filters = Filters.regex(r"^(Config npm Proxy)$"), callback = npm_proxy),
-                MessageHandler(filters = Filters.regex(r"^(Consumo Nacionales)$"), callback = nacionales)]
+                MessageHandler(filters = Filters.regex(r"^(Consumo Nacionales)$"), callback = nacionales),
+                MessageHandler(filters = Filters.regex(r"^(Libre de Consumo)$"), callback = libre_costo)]
+                
                 ,
             REPO: [
                 MessageHandler(filters = Filters.regex(r'^🐧 Ubuntu Repo 🐧$'), callback=send_ubuntu_repo),
